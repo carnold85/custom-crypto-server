@@ -211,3 +211,51 @@ Connection closed by foreign host.
 
 - This project was written in 2018 and may not reflect modern best practices.
 - Root privileges (`sudo`) are required due to `GCRYCTL_INIT_SECMEM`.
+
+
+
+## **Running with Docker**
+
+You can use Docker to easily run and manage the `custom-cryptd` server and key generator.
+
+### **Generating Keys**
+To generate a new key, use the following command:
+```bash
+docker-compose run --rm cryptd-generator
+```
+This will generate a new key file in the shared volume (`crypto-keys`) and exit.
+
+---
+
+### **Starting the Server**
+To start the `cryptd-server`, use the following command:
+```bash
+docker-compose up -d cryptd-server
+```
+This will run the server in detached mode.
+
+---
+
+### **Entering Passphrases**
+The `cryptd-server` requires you to enter the passphrases for your keys during startup. To do this:
+1. Attach to the running `cryptd-server` container:
+   ```bash
+   docker attach cryptd-server
+   ```
+2. Enter the required passphrases when prompted.
+
+---
+
+### **Detaching from the Server**
+Once you've entered the passphrases:
+1. Detach from the container without stopping it:
+   - Press **`Ctrl+P`** followed by **`Ctrl+Q`**.
+
+The `cryptd-server` will continue running in the background.
+
+---
+
+### **Accessing Logs**
+To view logs from the `cryptd-server`:
+```bash
+docker-compose logs -f cryptd-server

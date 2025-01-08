@@ -1,0 +1,39 @@
+services:
+
+  cryptd-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    image: local/cryptd:latest
+    container_name: cryptd-server
+    ports:
+      - "10000:10000"
+    volumes:
+      - crypto-keys:/keys
+    environment:
+      MODE: server
+      KEY_DIR: /keys
+    stdin_open: true # needed to insert the passphrase
+    tty: true # needed to insert the passphrase
+    privileged: true # enables privileged mode for GCRYCTL_INIT_SECMEM
+
+  cryptd-generator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    image: local/cryptd:latest
+    container_name: cryptd-generator
+    volumes:
+      - crypto-keys:/keys
+    environment:
+      MODE: generate
+      KEY_DIR: /keys
+    stdin_open: true # needed to insert the passphrase
+    tty: true # needed to insert the passphrase
+    privileged: true # enables privileged mode for GCRYCTL_INIT_SECMEM
+
+volumes:
+  crypto-keys:
+    driver: local

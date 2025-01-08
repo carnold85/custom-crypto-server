@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: crypto-keys
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cryptd-server
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cryptd-server
+  template:
+    metadata:
+      labels:
+        app: cryptd-server
+    spec:
+      containers:
+        - name: cryptd-server
+          image: local/cryptd:latest
+          ports:
+            - containerPort: 10000
+          volumeMounts:
+            - mountPath: /keys
+              name: crypto-keys
+          env:
+            - name: MODE
+              value: server
+            - name: KEY_DIR
+              value: /keys
+          tty: true
+          stdin: true
+      volumes:
+        - name: crypto-keys
+          persistentVolumeClaim:
+            claimName: crypto-keys
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cryptd-generator
+  namespace: default
+spec:
+  template:
+    metadata:
+      labels:
+        app: cryptd-generator
+    spec:
+      containers:
+        - name: cryptd-generator
+          image: local/cryptd:latest
+          volumeMounts:
+            - mountPath: /keys
+              name: crypto-keys
+          env:
+            - name: MODE
+              value: generate
+            - name: KEY_DIR
+              value: /keys
+          tty: true
+          stdin: true
+      restartPolicy: Never
+      volumes:
+        - name: crypto-keys
+          persistentVolumeClaim:
+            claimName: crypto-keys

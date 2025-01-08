@@ -147,9 +147,15 @@ void daemonizeMe(const char *pidfile) {
 
 	/* Reopen stdin (fd = 0), stdout (fd = 1), stderr (fd = 2) */
 	syslog(LOG_NOTICE, "Remove std*..");
-	stdin = fopen("/dev/null", "r");
-	stdout = fopen("/dev/null", "w+");
-	stderr = fopen("/dev/null", "w+");
+    	if (freopen("/dev/null", "r", stdin) == nullptr) {
+        	exit(EXIT_FAILURE);
+    	}
+    	if (freopen("/dev/null", "w", stdout) == nullptr) {
+        	exit(EXIT_FAILURE);
+    	}
+    	if (freopen("/dev/null", "w", stderr) == nullptr) {
+        	exit(EXIT_FAILURE);
+    	}
 
 	/* Ensure only one copy */
 	pidFilehandle = open(pidfile, O_RDWR | O_CREAT, 0600);
